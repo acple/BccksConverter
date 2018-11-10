@@ -1,5 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text;
 using Parsec;
 using static Parsec.Parser;
 using static Parsec.Text;
@@ -20,10 +24,14 @@ namespace BccksConverter
                            from ruby in ManyTill(Any(), closeBrace).ToStr()
                            select $"{{{words}}}({ruby})";
 
-            var aster = Char('*');
-            var strong = from start in aster
-                         from words in ManyTill(Any(), aster).ToStr()
-                         select ConvertStrong(words);
+            var asterisk = Char('*');
+            var surrogate = HighSurrogate().Append(LowSurrogate()).ToStr();
+            var strong = from _ in asterisk
+                         from chars in ManyTill(surrogate | Any().ToStr(), asterisk)
+                         select chars
+                            .Select(x => $"{{{x}}}({'﹅'})")
+                            .Aggregate(new StringBuilder(), (sb, x) => sb.Append(x))
+                            .ToString();
 
             var hat = Char('^');
             var tcy = from _ in hat
@@ -34,12 +42,6 @@ namespace BccksConverter
 
             _parser = parser;
         }
-
-        private static string ConvertStrong(string words)
-            => $"{{{words}}}({new string('﹅', CountWord(words))})";
-
-        private static int CountWord(string words)
-            => new StringInfo(words).LengthInTextElements;
 
         public string Convert(string input)
             => _parser.Parse(input);
