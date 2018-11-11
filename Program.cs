@@ -15,11 +15,12 @@ namespace BccksConverter
             if (!args.All(File.Exists))
                 throw new Exception("invalid arguments");
 
-            var tasks = args.Select(Path.GetFullPath).Distinct().Select(x => Run(x));
+            var converter = new Converter();
+            var tasks = args.Select(Path.GetFullPath).Distinct().Select(x => Run(x, converter));
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private static async Task Run(string inputPath)
+        private static async Task Run(string inputPath, IConverter converter)
         {
             var dir = Path.GetDirectoryName(inputPath);
             var fileName = Path.GetFileNameWithoutExtension(inputPath);
@@ -30,7 +31,7 @@ namespace BccksConverter
             using (var reader = new StreamReader(input, Encoding.UTF8))
             {
                 var from = await reader.ReadToEndAsync().ConfigureAwait(false);
-                var to = new Converter().Convert(from);
+                var to = converter.Convert(from);
 
                 using (var output = new FileStream(outputPath, FileMode.Create))
                 using (var writer = new StreamWriter(output, Encoding.UTF8))
