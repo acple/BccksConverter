@@ -39,10 +39,8 @@ namespace BccksConverter
                     .ToString());
 
             var hat = Char('^');
-            var tcy =
-                from _ in hat
-                from words in ManyTill(Any(), hat).ToStr()
-                select $"[tcy]{words}[/tcy]";
+            var tcy = hat.Right(ManyTill(Any(), hat)).ToStr()
+                .Map(words => $"[tcy]{words}[/tcy]");
 
             var parser = Many(withRuby | strong | tcy | Any().ToStr()).Join();
 
