@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,10 +30,8 @@ namespace BccksConverter
             var asterisk = Char('*');
             var surrogate = HighSurrogate().Append(LowSurrogate()).ToStr();
             var strong = asterisk.Right(ManyTill(surrogate | Any().ToStr(), asterisk))
-                .Map(chars => chars
-                    .Select(x => $"{{{x}}}({'﹅'})")
-                    .Aggregate(new StringBuilder(), (sb, x) => sb.Append(x))
-                    .ToString());
+                .Map(chars => chars.Select(x => $"{{{x}}}({'﹅'})"))
+                .Join();
 
             var hat = Char('^');
             var tcy = hat.Right(ManyTill(Any(), hat)).ToStr()
