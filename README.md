@@ -5,6 +5,8 @@
 
 ### 使い方
 
+これいる: [.NET Core SDK v2.1-](https://dot.net)
+
 ```sh
 $ dotnet run <げんこー.txt>
 ```
