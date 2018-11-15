@@ -8,6 +8,8 @@ namespace BccksConverter
 {
     internal class Program
     {
+        private static readonly Encoding _UTF8 = new UTF8Encoding(false);
+
         private static async Task Main(string[] args)
         {
             if (args.Length == 0)
@@ -28,13 +30,13 @@ namespace BccksConverter
             var outputPath = Path.Combine(dir, $"{fileName}_converted{ext}");
 
             using (var input = new FileStream(inputPath, FileMode.Open))
-            using (var reader = new StreamReader(input, Encoding.UTF8))
+            using (var reader = new StreamReader(input, _UTF8))
             {
                 var from = await reader.ReadToEndAsync().ConfigureAwait(false);
                 var to = converter.Convert(from);
 
                 using (var output = new FileStream(outputPath, FileMode.Create))
-                using (var writer = new StreamWriter(output, Encoding.UTF8))
+                using (var writer = new StreamWriter(output, _UTF8))
                     await writer.WriteAsync(to).ConfigureAwait(false);
             }
         }
