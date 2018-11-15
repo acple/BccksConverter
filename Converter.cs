@@ -18,6 +18,8 @@ namespace BccksConverter
 
         static Converter()
         {
+            var any = Any().ToStr();
+
             var openBrace = Char('{');
             var closeBrace = Char('}');
             var pipe = Char('|');
@@ -29,7 +31,7 @@ namespace BccksConverter
 
             var asterisk = Char('*');
             var surrogate = HighSurrogate().Append(LowSurrogate()).ToStr();
-            var strong = asterisk.Right(ManyTill(surrogate | Any().ToStr(), asterisk))
+            var strong = asterisk.Right(ManyTill(surrogate | any, asterisk))
                 .Map(chars => chars.Select(x => $"{{{x}}}({'﹅'})"))
                 .Join();
 
@@ -37,7 +39,7 @@ namespace BccksConverter
             var tcy = hat.Right(ManyTill(Any(), hat)).ToStr()
                 .Map(words => $"[tcy]{words}[/tcy]");
 
-            var parser = Many(withRuby | strong | tcy | Any().ToStr()).Join();
+            var parser = Many(withRuby | strong | tcy | any).Join();
 
             _Parser = parser;
         }
