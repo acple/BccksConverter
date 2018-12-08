@@ -35,11 +35,13 @@ namespace BccksConverter
                 .Map(chars => chars.Select(x => $"{{{x}}}({'﹅'})"))
                 .Join();
 
+            var trailingWhiteSpace = SkipTill(WhiteSpace(), EndOfLine()).ToStr();
+
             var hat = Char('^');
             var tcy = hat.Right(ManyTill(Any(), hat)).ToStr()
                 .Map(words => $"[tcy]{words}[/tcy]");
 
-            var parser = Many(withRuby | strong | tcy | any).Join();
+            var parser = Many(withRuby | strong | tcy | trailingWhiteSpace | any).Join();
 
             _Parser = parser;
         }
