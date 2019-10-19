@@ -1,9 +1,9 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using Parsec;
-using static Parsec.Parser;
-using static Parsec.Text;
+using ParsecSharp;
+using static ParsecSharp.Parser;
+using static ParsecSharp.Text;
 
 namespace BccksConverter
 {
@@ -18,41 +18,41 @@ namespace BccksConverter
 
         static Converter()
         {
-            var any = Any().ToStr();
+            var any = Any().AsString();
 
             var openBrace = Char('{');
             var closeBrace = Char('}');
             var pipe = Char('|');
             var withRuby =
-                from _ in openBrace
-                from words in ManyTill(Any(), pipe).ToStr()
-                from ruby in ManyTill(Any(), closeBrace).ToStr()
+                from words in Quoted(openBrace, LookAhead(pipe)).AsString()
+                from ruby in Quoted(pipe, closeBrace).AsString()
                 select $"{{{words}}}({ruby})";
 
             var asterisk = Char('*');
-            var surrogate = HighSurrogate().Append(LowSurrogate()).ToStr();
-            var strong = asterisk.Right(ManyTill(surrogate | any, asterisk))
+            var strong = (SurrogatePair() | any).Quote(asterisk)
                 .Map(chars => chars.Select(x => $"{{{x}}}({'﹅'})"))
                 .Join();
 
-            var trailingWhiteSpace = SkipTill(WhiteSpace(), EndOfLine()).ToStr();
+            var trailingWhiteSpace = SkipTill(WhiteSpace(), EndOfLine()).AsString();
 
             var hat = Char('^');
-            var tcy = hat.Right(ManyTill(Any(), hat)).ToStr()
+            var tcy = Quoted(hat).AsString()
                 .Map(words => $"[tcy]{words}[/tcy]");
 
-            var parser = Many(withRuby | strong | tcy | trailingWhiteSpace | any).Join();
+            var parser = Choice(withRuby, strong, tcy, trailingWhiteSpace, any)
+                .FoldLeft(_ => new StringBuilder(), (builder, x) => builder.Append(x))
+                .ToStr();
 
             _Parser = parser;
         }
 
         public string Convert(string input)
-            => _Parser.Parse(input);
+            => _Parser.Parse(input).Value;
 
         public string Convert(Stream input)
-            => _Parser.Parse(input);
+            => _Parser.Parse(input).Value;
 
         public string Convert(Stream input, Encoding encoding)
-            => _Parser.Parse(input, encoding);
+            => _Parser.Parse(input, encoding).Value;
     }
 }

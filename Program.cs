@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,16 +29,16 @@ namespace BccksConverter
             var ext = Path.GetExtension(inputPath);
             var outputPath = Path.Combine(dir, $"{fileName}_converted{ext}");
 
-            using (var input = new FileStream(inputPath, FileMode.Open))
-            using (var reader = new StreamReader(input, _UTF8))
-            {
-                var from = await reader.ReadToEndAsync().ConfigureAwait(false);
-                var to = converter.Convert(from);
+            using var input = new FileStream(inputPath, FileMode.Open);
+            using var reader = new StreamReader(input, _UTF8);
 
-                using (var output = new FileStream(outputPath, FileMode.Create))
-                using (var writer = new StreamWriter(output, _UTF8))
-                    await writer.WriteAsync(to).ConfigureAwait(false);
-            }
+            var from = await reader.ReadToEndAsync().ConfigureAwait(false);
+            var to = converter.Convert(from);
+
+            using var output = new FileStream(outputPath, FileMode.Create);
+            using var writer = new StreamWriter(output, _UTF8);
+
+            await writer.WriteAsync(to).ConfigureAwait(false);
         }
     }
 }
